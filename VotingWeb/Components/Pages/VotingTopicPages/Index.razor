@@ -1,0 +1,42 @@
+@page "/votingtopics"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using VotingWeb.Models
+@using VotingWeb.Data
+@implements IAsyncDisposable
+@attribute [Authorize(Roles="Admin")]
+@inject VotingWeb.Data.ApplicationDbContext context
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="votingtopics/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.VotingTopics">
+    <PropertyColumn Property="votingtopic => votingtopic.Title" />
+    <PropertyColumn Property="votingtopic => votingtopic.TitleImage" />
+    <TemplateColumn Title="Answers">
+        @string.Join(",", context.Answers)
+    </TemplateColumn>
+
+    <TemplateColumn Context="votingtopic">
+        <a href="@($"votingtopics/edit?id={votingtopic.Id}")">Edit</a> |
+        <a href="@($"votingtopics/details?id={votingtopic.Id}")">Details</a> |
+        <a href="@($"votingtopics/delete?id={votingtopic.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+    }
+    private string GetAnswers(VotingTopic votingTopic){
+        return string.Join(",",votingTopic.Answers);
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

@@ -1,0 +1,56 @@
+@page "/votingtopics/create"
+@using Microsoft.EntityFrameworkCore
+@using VotingWeb.Models
+@inject VotingWeb.Data.ApplicationDbContext context
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>VotingTopic</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="VotingTopicDto" OnValidSubmit="AddVotingTopic" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="title" class="form-label">Title:</label> 
+                <InputText id="title" @bind-Value="VotingTopicDto.Title" class="form-control" /> 
+                <ValidationMessage For="() => VotingTopicDto.Title" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="titleimage" class="form-label">TitleImage:</label> 
+                <InputText id="titleimage" @bind-Value="VotingTopicDto.TitleImage" class="form-control" /> 
+                <ValidationMessage For="() => VotingTopicDto.TitleImage" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="answers" class="form-label">Answers:</label> 
+                <InputText id="answers" @bind-Value="VotingTopicDto.Answers" class="form-control" /> 
+                <ValidationMessage For="() => VotingTopicDto.Answers" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/votingtopics">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private VotingTopicDTO VotingTopicDto { get; set; }
+
+    protected override void OnInitialized() => VotingTopicDto ??= new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddVotingTopic()
+    {
+        var votingTopic = VotingTopicDto.ToVotingTopic();
+        context.VotingTopics.Add(votingTopic);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/votingtopics");
+    }
+}

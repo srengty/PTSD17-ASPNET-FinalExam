@@ -1,0 +1,101 @@
+@page "/votingtopics/edit"
+@using Microsoft.EntityFrameworkCore
+@using VotingWeb.Models
+@inject VotingWeb.Data.ApplicationDbContext context
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>VotingTopic</h2>
+<hr />
+@if (VotingTopicDto is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="VotingTopicDto" OnValidSubmit="UpdateVotingTopic" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="VotingTopic.Id" value="@VotingTopicDto.Id" />
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title:</label>
+                    <InputText id="title" @bind-Value="VotingTopicDto.Title" class="form-control" />
+                    <ValidationMessage For="() => VotingTopicDto.Title" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="titleimage" class="form-label">TitleImage:</label>
+                    <InputText id="titleimage" @bind-Value="VotingTopicDto.TitleImage" class="form-control" />
+                    <ValidationMessage For="() => VotingTopicDto.TitleImage" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="answers" class="form-label">Answers:</label>
+                    <InputText id="answers" @bind-Value="VotingTopicDto.Answers" class="form-control" />
+                    <ValidationMessage For="() => VotingTopicDto.Answers" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/votingtopics">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private VotingTopicDTO? VotingTopicDto { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        VotingTopicDto ??= Models.VotingTopicDTO.FromVotingTopic(await context.VotingTopics.FirstOrDefaultAsync(m => m.Id == Id));
+
+        if (VotingTopicDto is null)
+        {
+            NavigationManager.NotFound();
+        }
+        
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateVotingTopic()
+    {
+        Console.WriteLine(string.Join(",",VotingTopicDto!.Answers));
+        VotingTopic? votingTopic =context.VotingTopics.Find(Id);
+
+        if(votingTopic == null){
+            NavigationManager.NotFound();
+        }else{
+            votingTopic.Answers = VotingTopicDto.Answers.Split(",").ToList();
+            votingTopic.Title=VotingTopicDto.Title;
+            votingTopic.TitleImage = VotingTopicDto.TitleImage;
+        }
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            throw;
+            
+        }
+
+        NavigationManager.NavigateTo("/votingtopics");
+    }
+
+    private bool VotingTopicExists(int id)
+    {
+        return context.VotingTopics.Any(e => e.Id == id);
+    }
+}
